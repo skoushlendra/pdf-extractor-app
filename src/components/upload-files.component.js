@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import UploadService from "../services/files.service";
+import UploadService from "../services/upload-files.service";
 
 export default class UploadFiles extends Component {
   constructor(props) {
