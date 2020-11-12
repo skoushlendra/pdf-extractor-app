@@ -4,13 +4,14 @@ import UploadService from "../services/upload-files.service";
 export default class UploadFiles extends Component {
   constructor(props) {
     super(props);
-    this.selectFile = this.selectFile.bind(this);
+    this.selectFiles = this.selectFiles.bind(this);
     this.upload = this.upload.bind(this);
+    this.uploadFiles = this.uploadFiles.bind(this);
 
     this.state = {
       selectedFiles: undefined,
-      progress: 0,
-      message: "",
+      progressInfos: [],
+      message: null,
 
       fileInfos: [],
     };
@@ -24,29 +25,30 @@ export default class UploadFiles extends Component {
     });
   }
 
-  selectFile(event) {
+  selectFiles(event) {
     this.setState({
+      progressInfos: [],
       selectedFiles: event.target.files,
     });
   }
 
-  upload() {
-    let currentFile = this.state.selectedFiles[0];
+  upload(idx, file) {
+    let _progressInfos = [...this.state.progressInfos];
 
-    this.setState({
-      progress: 0,
-      currentFile: currentFile,
-    });
-
-    UploadService.upload(currentFile, (event) => {
+    UploadService.upload(file, (event) => {
+      _progressInfos[idx].percentage = Math.round((100 * event.loaded) / event.total);
       this.setState({
-        progress: Math.round((100 * event.loaded) / event.total),
+        _progressInfos,
       });
     })
       .then((response) => {
-        this.setState({
-          message: response.data.message,
+        this.setState((prev) => {
+          let prevMessage = prev.message ? prev.message + ", " : "";
+          return {
+            message: prevMessage + response.data.orderIds,
+          };
         });
+
         return UploadService.getFiles();
       })
       .then((files) => {
@@ -55,61 +57,104 @@ export default class UploadFiles extends Component {
         });
       })
       .catch(() => {
+        _progressInfos[idx].percentage = 0;
         this.setState({
-          progress: 0,
+          progressInfos: _progressInfos,
           message: "Could not upload the file!",
-          currentFile: undefined,
         });
       });
+  }
 
-    this.setState({
-      selectedFiles: undefined,
-    });
+  uploadFiles() {
+    const selectedFiles = this.state.selectedFiles;
+
+    let _progressInfos = [];
+
+    for (let i = 0; i < selectedFiles.length; i++) {
+      _progressInfos.push({ percentage: 0, fileName: selectedFiles[i].name });
+    }
+
+    this.setState(
+      {
+        progressInfos: _progressInfos,
+        message: null,
+      },
+      () => {
+        for (let i = 0; i < selectedFiles.length; i++) {
+          this.upload(i, selectedFiles[i]);
+        }
+      }
+    );
   }
 
   render() {
-    const {
-      selectedFiles,
-      currentFile,
-      progress,
-      message,
-      fileInfos,
-    } = this.state;
+    const { selectedFiles, progressInfos, message, fileInfos } = this.state;
 
     return (
       <div>
-        {currentFile && (
-          <div className="progress">
-            <div
-              className="progress-bar progress-bar-info progress-bar-striped"
-              role="progressbar"
-              aria-valuenow={progress}
-              aria-valuemin="0"
-              aria-valuemax="100"
-              style={{ width: progress + "%" }}
-            >
-              {progress}%
+        {progressInfos &&
+          progressInfos.map((progressInfo, index) => (
+            <div className="mb-2">
+              <span>{progressInfo.fileName}</span>
+              <div className="progress">
+                <div
+                  className="progress-bar progress-bar-info"
+                  role="progressbar"
+                  aria-valuenow={progressInfo.percentage}
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  style={{ width: progressInfo.percentage + "%" }}
+                >
+                  {progressInfo.percentage}%
+                </div>
+              </div>
             </div>
-          </div>
-        )}
+          ))}
 
         <label className="btn btn-default">
-          <input type="file" onChange={this.selectFile} />
+          <input type="file" multiple onChange={this.selectFiles} />
         </label>
 
         <button
           className="btn btn-success"
           disabled={!selectedFiles}
-          onClick={this.upload}
+          onClick={this.uploadFiles}
         >
           Upload
         </button>
 
-        <div className="alert alert-light" role="alert">
-          {message}
-        </div>
+        {message && (
+          <div class="container py-5">
+              <div class="row">
+                  <div class="col-lg-7 mx-auto">
+                      <div class="card rounded-0 border-0 shadow">
+                          <div class="card-body p-5">
+                              <div class="table-responsive">
+                                  <table class="table">
+                                      <thead>
+                                          <tr>
+                                              <th scope="col">#</th>
+                                              <th scope="col">ID</th>
+                                          </tr>
+                                      </thead>
+                                      <tbody>
+                                        {message.split(",").map((item, index) => (
+                                            <tr key={index}>
+                                              <th scope="row">{(index+1)}</th>
+                                              <td>{item}</td>
+                                            </tr>
+                                          ))}
+                                      </tbody>
+                                  </table>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+        )}
 
-        <div className="card">
+        <div className="card" class="hide">
           <div className="card-header">List of Files</div>
           <ul className="list-group list-group-flush">
             {fileInfos &&
