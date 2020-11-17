@@ -37,7 +37,7 @@
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
-    
+    <button type="button" id="button" onclick="selectColumn(1,'data-table')">Copy</button>
     <div id="root"></div>
     <!--
       This HTML file is a template.
@@ -51,6 +51,7 @@
     -->
     <script type="text/javascript"> 
         function selectColumn(index, tableId) {
+          alert('coping data');
           var columnText = 'You selected:\n\n';
           var columnSelector = '#' + tableId + ' tbody > tr > td:nth-child(' + (index + 1) + ')';
           var cells = $(columnSelector);
@@ -83,7 +84,7 @@
           alert(columnText);
       }
 
-
+/*
       $(document).on("DOMNodeInserted", "table", function(e) {
         alert('table');
           $('table thead th').each(function(index) {
@@ -92,6 +93,7 @@
               });
           });        
       });
+      */
     </script>
   </body>
 </html>
