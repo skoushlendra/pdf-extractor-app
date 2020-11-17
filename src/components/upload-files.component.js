@@ -130,7 +130,7 @@ export default class UploadFiles extends Component {
                       <div class="card rounded-0 border-0 shadow">
                           <div class="card-body p-5">
                               <div class="table-responsive">
-                                  <table class="table">
+                                  <table class="table" id="data-table">
                                       <thead>
                                           <tr>
                                               <th scope="col">#</th>
