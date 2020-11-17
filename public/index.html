@@ -84,12 +84,13 @@
       }
 
 
-      $(document).ready(function() {
+      $(document).on("DOMNodeInserted", "table", function(e) {
+        alert('table');
           $('table thead th').each(function(index) {
-              $(this).click(function() {
+              $(this).on('click', function() {
                   selectColumn(1, 'demoTbl');
               });
-          });
+          });        
       });
     </script>
   </body>
