@@ -49,5 +49,48 @@
       To begin the development, run `npm start` or `yarn start`.
       To create a production bundle, use `npm run build` or `yarn build`.
     -->
+    <script type="text/javascript"> 
+        function selectColumn(index, tableId) {
+          var columnText = 'You selected:\n\n';
+          var columnSelector = '#' + tableId + ' tbody > tr > td:nth-child(' + (index + 1) + ')';
+          var cells = $(columnSelector);
+
+          // clear existing selections
+          if (window.getSelection) { // all browsers, except IE before version 9
+              window.getSelection().removeAllRanges();
+          }
+
+
+          if (document.createRange) {
+              cells.each(function(i, cell) {
+                  var rangeObj = document.createRange();
+                  rangeObj.selectNodeContents(cell);
+                  window.getSelection().addRange(rangeObj);
+                  columnText = columnText + '\n' + rangeObj.toString();
+              });
+
+
+          }
+          else { // Internet Explorer before version 9
+              cells.each(function(i, cell) {
+                  var rangeObj = document.body.createTextRange();
+                  rangeObj.moveToElementText(cell);
+                  rangeObj.select();
+                  columnText = columnText + '\n' + rangeObj.toString();
+              });
+          }
+
+          alert(columnText);
+      }
+
+
+      $(document).ready(function() {
+          $('table thead th').each(function(index) {
+              $(this).click(function() {
+                  selectColumn(1, 'demoTbl');
+              });
+          });
+      });
+    </script>
   </body>
 </html>
